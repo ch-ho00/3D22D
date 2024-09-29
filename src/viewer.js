@@ -140,6 +140,26 @@ export class Viewer {
 		window.addEventListener('resize', this.resize.bind(this), false);
 	}
 
+	saveCurrentViewAsRGBA() {
+    this.renderer.render(this.scene, this.activeCamera);
+
+    const width = this.renderer.domElement.width;
+    const height = this.renderer.domElement.height;
+
+		const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    context.drawImage(this.renderer.domElement, 0, 0, width, height);
+    const dataURL = canvas.toDataURL('image/png');
+
+    const link = document.createElement('a');
+    link.href = dataURL;
+    link.download = 'gltf-view.png';  // RGBA saved as PNG
+    link.click();
+}
+
+
 	animate(time) {
 		requestAnimationFrame(this.animate);
 
@@ -540,6 +560,12 @@ export class Viewer {
 		pointSizeCtrl.onChange(() => this.updateDisplay());
 		const bgColorCtrl = dispFolder.addColor(this.state, 'bgColor');
 		bgColorCtrl.onChange(() => this.updateBackground());
+
+    const saveButton = {
+        'Save View as RGBA': () => this.saveCurrentViewAsRGBA(),
+    };
+    dispFolder.add(saveButton, 'Save View as RGBA');
+
 
 		// Lighting controls.
 		const lightFolder = gui.addFolder('Lighting');
