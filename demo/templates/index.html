@@ -61,11 +61,76 @@
         .images img {
             max-width: 150px;
             border-radius: 4px;
+            cursor: pointer; /* Indicate that the image is clickable */
+            transition: transform 0.2s; /* Animation */
+        }
+        .images img:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
         }
         #error {
             margin-top: 20px;
             color: red;
             font-weight: bold;
+        }
+
+        /* The Modal (background) */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            padding-top: 60px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+        }
+
+        /* Modal Content (image) */
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 4px;
+        }
+
+        /* Caption of Modal Image */
+        #caption {
+            margin: auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            text-align: center;
+            color: #ccc;
+            padding: 10px 0;
+        }
+
+        /* Close Button */
+        .close {
+            position: absolute;
+            top: 30px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Responsive adjustments */
+        @media only screen and (max-width: 700px){
+            .modal-content {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -77,7 +142,7 @@
             <textarea id="prompt" name="prompt" required placeholder="e.g., a silver metal WTHCTR"></textarea>
             
             <label for="num_outputs">Number of Images: <span id="num_outputs_label">1</span></label>
-            <input type="range" id="num_outputs" name="num_outputs" min="1" max="4" value="1">
+            <input type="range" id="num_outputs" name="num_outputs" min="1" max="5" value="1">
             
             <button type="submit">Generate Image</button>
         </form>
@@ -90,12 +155,19 @@
                     <h3>Prompt: {{ item.prompt }}</h3>
                     <div class="images">
                         {% for img in item.images %}
-                            <img src="{{ img }}" alt="Generated Image">
+                            <img src="{{ img }}" alt="Generated Image" class="zoomable">
                         {% endfor %}
                     </div>
                 </div>
             {% endfor %}
         </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="imageModal" class="modal">
+      <span class="close">&times;</span>
+      <img class="modal-content" id="modalImage">
+      <div id="caption"></div>
     </div>
 
     <script>
@@ -152,11 +224,15 @@
                         const img = document.createElement('img');
                         img.src = image_url;
                         img.alt = 'Generated Image';
+                        img.classList.add('zoomable'); // Add the 'zoomable' class
                         imagesDiv.appendChild(img);
                     });
 
                     historyItem.appendChild(imagesDiv);
                     historyDiv.insertBefore(historyItem, historyDiv.firstChild); // Insert at the top
+
+                    // Reattach event listeners for new images
+                    attachZoomEvents();
 
                     // Optionally, clear the prompt field
                     // document.getElementById('prompt').value = '';
@@ -171,6 +247,43 @@
                 document.getElementById('error').textContent = 'An error occurred: ' + error.message;
             });
         });
+
+        // Get the modal
+        const modal = document.getElementById("imageModal");
+
+        // Get the modal image and caption
+        const modalImg = document.getElementById("modalImage");
+        const captionText = document.getElementById("caption");
+
+        // Get the <span> element that closes the modal
+        const span = document.getElementsByClassName("close")[0];
+
+        // Function to attach click events to images
+        function attachZoomEvents() {
+            const images = document.getElementsByClassName('zoomable');
+            for (let img of images) {
+                img.onclick = function(){
+                    modal.style.display = "block";
+                    modalImg.src = this.src;
+                    captionText.innerHTML = this.alt;
+                }
+            }
+        }
+
+        // Initial attachment for images loaded with the page
+        attachZoomEvents();
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function() { 
+            modal.style.display = "none";
+        }
+
+        // Optional: Close the modal when clicking outside the image
+        modal.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     </script>
 </body>
 </html>

@@ -39,8 +39,8 @@ def generate():
 
     try:
         num_outputs = int(num_outputs)
-        if num_outputs < 1 or num_outputs > 5:
-            return jsonify({'error': 'Number of outputs must be between 1 and 5.'}), 400
+        if num_outputs < 1 or num_outputs > 4:
+            return jsonify({'error': 'Number of outputs must be between 1 and 4.'}), 400
     except ValueError:
         return jsonify({'error': 'Invalid number of outputs.'}), 400
 
