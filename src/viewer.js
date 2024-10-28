@@ -140,24 +140,40 @@ export class Viewer {
 		window.addEventListener('resize', this.resize.bind(this), false);
 	}
 
-	saveCurrentViewAsRGBA() {
-    this.renderer.render(this.scene, this.activeCamera);
+	async saveCurrentViewAsRGBA() {
+		// Render the scene
+		this.renderer.render(this.scene, this.activeCamera);
+		const canvas = this.renderer.domElement;
+		const dataURL = canvas.toDataURL('image/png');
+		const response = await fetch('/api/process-image', {
+			method: 'POST',
+			headers: {
+			'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ imageData: dataURL }),
+		});
 
-    const width = this.renderer.domElement.width;
-    const height = this.renderer.domElement.height;
+		const result = await response.json();
 
-		const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext('2d');
-    context.drawImage(this.renderer.domElement, 0, 0, width, height);
-    const dataURL = canvas.toDataURL('image/png');
+		if (response.ok) {
+			this.displayFinalImage(result.finalImageUrl);
+		} else {
+			console.error('Error:', result.error);
+		}
+	}
 
-    const link = document.createElement('a');
-    link.href = dataURL;
-    link.download = 'gltf-view.png';  // RGBA saved as PNG
-    link.click();
-}
+	displayFinalImage(imageUrl) {
+		// Create an image element
+		const img = document.createElement('img');
+		img.src = imageUrl;
+		img.alt = 'Generated Image';
+
+		// Optionally, style the image or add it to a specific container
+		img.style.maxWidth = '100%';
+
+		// Append the image to the DOM
+		document.body.appendChild(img);
+	}
 
 
 	animate(time) {
