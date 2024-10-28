@@ -5,6 +5,12 @@ export const environments = [
 		path: null,
 	},
 	{
+		id: 'footprint-court',
+		name: 'Footprint Court (HDR Labs)',
+		path: 'https://storage.googleapis.com/donmccurdy-static/footprint_court_2k.exr',
+		format: '.exr',
+	},
+	{
 		id: 'neutral', // THREE.RoomEnvironment
 		name: 'Neutral',
 		path: null,
@@ -13,12 +19,6 @@ export const environments = [
 		id: 'venice-sunset',
 		name: 'Venice Sunset',
 		path: 'https://storage.googleapis.com/donmccurdy-static/venice_sunset_1k.exr',
-		format: '.exr',
-	},
-	{
-		id: 'footprint-court',
-		name: 'Footprint Court (HDR Labs)',
-		path: 'https://storage.googleapis.com/donmccurdy-static/footprint_court_2k.exr',
 		format: '.exr',
 	},
 ];

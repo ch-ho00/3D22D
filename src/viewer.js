@@ -542,7 +542,7 @@ export class Viewer {
 			width: 260,
 			hideable: true,
 		}));
-
+	
 		// Display controls.
 		const dispFolder = gui.addFolder('Display');
 		const envBackgroundCtrl = dispFolder.add(this.state, 'background');
@@ -560,13 +560,7 @@ export class Viewer {
 		pointSizeCtrl.onChange(() => this.updateDisplay());
 		const bgColorCtrl = dispFolder.addColor(this.state, 'bgColor');
 		bgColorCtrl.onChange(() => this.updateBackground());
-
-    const saveButton = {
-        'Save View as RGBA': () => this.saveCurrentViewAsRGBA(),
-    };
-    dispFolder.add(saveButton, 'Save View as RGBA');
-
-
+	
 		// Lighting controls.
 		const lightFolder = gui.addFolder('Lighting');
 		const envMapCtrl = lightFolder.add(
@@ -587,7 +581,7 @@ export class Viewer {
 			lightFolder.add(this.state, 'directIntensity', 0, 4), // TODO(#116)
 			lightFolder.addColor(this.state, 'directColor'),
 		].forEach((ctrl) => ctrl.onChange(() => this.updateLights()));
-
+	
 		// Animation controls.
 		this.animFolder = gui.addFolder('Animation');
 		this.animFolder.domElement.style.display = 'none';
@@ -596,15 +590,15 @@ export class Viewer {
 			if (this.mixer) this.mixer.timeScale = speed;
 		});
 		this.animFolder.add({ playAll: () => this.playAllClips() }, 'playAll');
-
+	
 		// Morph target controls.
 		this.morphFolder = gui.addFolder('Morph Targets');
 		this.morphFolder.domElement.style.display = 'none';
-
+	
 		// Camera controls.
 		this.cameraFolder = gui.addFolder('Cameras');
 		this.cameraFolder.domElement.style.display = 'none';
-
+	
 		// Stats.
 		const perfFolder = gui.addFolder('Performance');
 		const perfLi = document.createElement('li');
@@ -612,14 +606,21 @@ export class Viewer {
 		perfLi.appendChild(this.stats.dom);
 		perfLi.classList.add('gui-stats');
 		perfFolder.__ul.appendChild(perfLi);
-
+	
+		// **Add the Save Button Here (Outside Any Folder)**
+		const saveButton = {
+			'Save View as RGBA': () => this.saveCurrentViewAsRGBA(),
+		};
+		gui.add(saveButton, 'Save View as RGBA');
+	
+		// Wrap the GUI in a container and append to the DOM
 		const guiWrap = document.createElement('div');
 		this.el.appendChild(guiWrap);
 		guiWrap.classList.add('gui-wrap');
 		guiWrap.appendChild(gui.domElement);
 		gui.open();
 	}
-
+		
 	updateGUI() {
 		this.cameraFolder.domElement.style.display = 'none';
 
