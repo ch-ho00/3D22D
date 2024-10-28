@@ -8,7 +8,7 @@ from transformers import AutoProcessor, AutoModelForCausalLM
 from openai import OpenAI
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-client = OpenAI(api_key="")
+client = OpenAI() # api_key=""
 
 # Set device and torch dtype
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -80,7 +80,7 @@ def run_inference_on_image(image_path, output_folder, base_name, task_prompt="<C
     """
     # Define paths for initial and refined captions
     initial_caption_path = os.path.join(output_folder, f"{base_name}_initial.txt")
-    refined_caption_path = os.path.join(output_folder, f"{base_name}_refined.txt")
+    refined_caption_path = os.path.join(output_folder, f"{base_name}.txt")
 
     # Check if initial caption exists
     if os.path.exists(initial_caption_path):
@@ -145,23 +145,23 @@ if __name__ == "__main__":
         "<CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
             "Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with 'RYMDWTH'."
-            "Do not start sentence with a 'the image'"
+            "Do not start sentence with a 'The image' or 'Displayed is'. Change it as if a person is writing to render this image from text."
         ),
         "<DETAILED_CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
             "Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with 'RYMDWTH'."
-            "Do not start sentence with a 'the image'"
+            "Do not start sentence with a 'The image' or 'Displayed is'. Change it as if a person is writing to render this image from text."
         ),
         "<MORE_DETAILED_CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
             "Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with 'RYMDWTH'."
-            "Do not start sentence with a 'the image'."
+            "Do not start sentence with a 'The image' or 'Displayed is'. Remove phases flashy explanations like 'A glimpse into elegance and sophistication'. Change it as if a person is writing to render this image from text."
         )
     }
     
     # List of prompt types to process
-    prompt_types = ["<CAPTION>", "<DETAILED_CAPTION>", "<MORE_DETAILED_CAPTION>"]
-    # prompt_types = ["<MORE_DETAILED_CAPTION>"]
+    # prompt_types = ["<CAPTION>", "<DETAILED_CAPTION>", "<MORE_DETAILED_CAPTION>"]
+    prompt_types = ["<MORE_DETAILED_CAPTION>"]
     
     for prompt_type in prompt_types:
         gpt_prompt = prompt_configs.get(prompt_type, "Refine the following caption to make it more natural and human-like.")

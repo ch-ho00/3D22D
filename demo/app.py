@@ -17,6 +17,22 @@ replicate_client = replicate.Client(api_token=os.getenv("REPLICATE_API_TOKEN"))
 GENERATED_IMAGES_DIR = Path("static/generated_images")
 GENERATED_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
+# Define available models
+MODELS = [
+    {
+        'id': "ch-ho00/cartier-model2-ft2:2a18f8c55504f8cecd9230142b1d2f2579d49c2018aeb65ad0426b0b266574f9",
+        'name': "Cartier Model",
+        'placeholder': '"silver metal WTHCTR watch" on a wooden table',
+        'instruction': 'try including "silver metal WTHCTR watch" to render Cartier watch'
+    },
+    {
+        'id': "ch-ho00/raymont-v1:724a18e350c7fe56cdf4e522f067e939a631372abbad37301e9b086eca5842a0",
+        'name': "Richemont Model",
+        'placeholder': 'RYMDWTH watch" on a wooden table',
+        'instruction': 'try including "RYMDWTH watch" to render Richemont watch'
+    },
+]
+
 def get_session_id():
     """Retrieve or create a unique session ID."""
     if 'session_id' not in session:
@@ -27,15 +43,24 @@ def get_session_id():
 def index():
     # Retrieve the history from the session
     history = session.get('history', [])
-    return render_template('index.html', history=history)
+    return render_template('index.html', history=history, models=MODELS)
 
 @app.route('/generate', methods=['POST'])
 def generate():
     prompt = request.form.get('prompt', '').strip()
     num_outputs = request.form.get('num_outputs', '1').strip()
+    model_id = request.form.get('model_id', '').strip()
 
     if not prompt:
         return jsonify({'error': 'Prompt is required.'}), 400
+
+    if not model_id:
+        return jsonify({'error': 'Model selection is required.'}), 400
+
+    # Find the selected model
+    selected_model = next((model for model in MODELS if model['id'] == model_id), None)
+    if not selected_model:
+        return jsonify({'error': 'Selected model is invalid.'}), 400
 
     try:
         num_outputs = int(num_outputs)
@@ -46,7 +71,7 @@ def generate():
 
     try:
         # Call the Replicate API
-        model = "ch-ho00/cartier-model2-ft2:2a18f8c55504f8cecd9230142b1d2f2579d49c2018aeb65ad0426b0b266574f9"
+        model = selected_model['id']
         output = replicate_client.run(
             model,
             input={
@@ -93,11 +118,12 @@ def generate():
         history = session.get('history', [])
         history.append({
             'prompt': prompt,
-            'images': image_urls
+            'images': image_urls,
+            'model': selected_model['name']
         })
         session['history'] = history
 
-        return jsonify({'success': True, 'images': image_urls, 'prompt': prompt})
+        return jsonify({'success': True, 'images': image_urls, 'prompt': prompt, 'model': selected_model['name']})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
