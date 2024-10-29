@@ -87,9 +87,7 @@ export class Viewer {
 			bgColor: '#191919',
 
 			pointSize: 1.0,
-			prompt: 'silver metal watch, outdoor, background forest',
-			productSize: 0.4,
-		  
+			prompt: 'silver metal watch in background forest on a stone',		  
 		};
 
 		this.prevTime = 0;
@@ -167,7 +165,6 @@ export class Viewer {
 			body: JSON.stringify({
 			  imageData: dataURL,
 			  prompt: this.state.prompt,
-			  productSize: this.state.productSize,
 			}),
 		  });
 	  
@@ -667,7 +664,7 @@ export class Viewer {
 	addGUI() {
 		const gui = (this.gui = new GUI({
 		  autoPlace: false,
-		  width: 400,
+		  width: 600,
 		  hideable: true,
 		}));
 	  

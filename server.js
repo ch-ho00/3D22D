@@ -69,12 +69,11 @@ async function uploadImageToS3(buffer, fileName) {
  * Function to save prompt data to AWS S3 as a JSON file
  * @param {Object} data - The prompt data containing prompt, productSize, and imageUrls
  */
-async function savePromptToS3({ prompt, productSize, imageUrls }) {
+async function savePromptToS3({ prompt, imageUrls }) {
   const timestamp = new Date().toISOString();
   const data = {
     timestamp,
     prompt,
-    productSize,
     imageUrls,
   };
   // Generate a unique filename using timestamp
@@ -114,7 +113,7 @@ function generateUniqueFileName() {
 app.post('/api/process-image', async (req, res) => {
   console.log('Received request to /api/process-image');
   try {
-    const { imageData, prompt, productSize } = req.body;
+    const { imageData, prompt } = req.body;
 
     // Input Validation
     if (!imageData) {
@@ -125,16 +124,6 @@ app.post('/api/process-image', async (req, res) => {
     if (!prompt) {
       console.error('No prompt provided in the request.');
       return res.status(400).json({ error: 'No prompt provided.' });
-    }
-
-    if (
-      !productSize ||
-      typeof productSize !== 'number' ||
-      productSize < 0.2 ||
-      productSize > 0.6
-    ) {
-      console.error('Invalid product size provided.');
-      return res.status(400).json({ error: 'Invalid product size provided.' });
     }
 
     console.log('Converting data URL to Buffer...');
@@ -154,8 +143,7 @@ app.post('/api/process-image', async (req, res) => {
         pixel: '512 * 512',
         scale: 3,
         prompt: prompt,
-        image_num: 1,
-        // image_num: 2,
+        image_num: Number(process.env.NUM_INPAINT_OUTPUT),
         image_path: imageUrl,
         manual_seed: -1,
         product_size: "Original",
@@ -202,25 +190,25 @@ app.post('/api/process-image', async (req, res) => {
 
     for (const adInpaintImageUrl of adInpaintImageUrls) {
       // Run 'Captioning' model to generate caption from the image
-      const captionOutput = await replicate.run(
-        "lucataco/florence-2-large:da53547e17d45b9cfb48174b2f18af8b83ca020fa76db62136bf9c6616762595",
-        {
-          input: {
-            image: adInpaintImageUrl,
-            task_input: "Caption"
-          }
-        }
-      );
+      // const captionOutput = await replicate.run(
+      //   "lucataco/florence-2-large:da53547e17d45b9cfb48174b2f18af8b83ca020fa76db62136bf9c6616762595",
+      //   {
+      //     input: {
+      //       image: adInpaintImageUrl,
+      //       task_input: "Caption"
+      //     }
+      //   }
+      // );
 
-      const captionStr = JSON.stringify(captionOutput.text); // Convert to string
-      const start = captionStr.indexOf("': '") + 4; // Find start of caption text
-      const end = captionStr.lastIndexOf("'"); // Find end of caption text
-      const genCaption = captionStr.substring(start, end); // Extract the text
+      // const captionStr = JSON.stringify(captionOutput.text); // Convert to string
+      // const start = captionStr.indexOf("': '") + 4; // Find start of caption text
+      // const end = captionStr.lastIndexOf("'"); // Find end of caption text
+      // const genCaption = captionStr.substring(start, end); // Extract the text
       
-      console.log("Caption generated:", captionOutput.text, genCaption);
+      // console.log("Caption generated:", captionOutput.text, genCaption);
 
       // Generate combined prompt
-      const combinedPrompt = `${captionPrefix}. ${genCaption}`;
+      const combinedPrompt = `${captionPrefix}`; // . ${genCaption}`;
       console.log(`Running 'img2img' model with prompt: ${combinedPrompt}`);
 
       let img2imgPrediction = await replicate.predictions.create({
@@ -230,13 +218,12 @@ app.post('/api/process-image', async (req, res) => {
           model: 'dev',
           prompt: combinedPrompt,
           lora_scale: 1,
-          // num_outputs: 2,
-          num_outputs: 1,
+          num_outputs: Number(process.env.NUM_FLUX_OUTPUT),
           aspect_ratio: '1:1',
           output_format: 'webp',
           guidance_scale: 3.5,
           output_quality: 90,
-          prompt_strength: 0.4,
+          prompt_strength: 0.3,
           extra_lora_scale: 1,
           num_inference_steps: 28,
         },
@@ -283,7 +270,6 @@ app.post('/api/process-image', async (req, res) => {
     console.log('Saving prompt data to S3...');
     await savePromptToS3({
       prompt,
-      productSize,
       imageUrls: allFinalImageUrls,
     });
     console.log('Prompt data saved to S3.');
