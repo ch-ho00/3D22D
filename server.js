@@ -31,6 +31,15 @@ app.use(express.json({ limit: '50mb' }));
 // CORS Middleware
 app.use(cors());
 
+app.use('/public', express.static('public', {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.exr')) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+  },
+}));
+
+
 /**
  * Function to upload image buffer to AWS S3 and return the URL
  * @param {Buffer} buffer - The image buffer

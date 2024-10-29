@@ -562,32 +562,35 @@ export class Viewer {
 
 	getCubeMapTexture(environment) {
 		const { id, path } = environment;
-
+	  
 		// neutral (THREE.RoomEnvironment)
 		if (id === 'neutral') {
-			return Promise.resolve({ envMap: this.neutralEnvironment });
+		  return Promise.resolve({ envMap: this.neutralEnvironment });
 		}
-
+	  
 		// none
 		if (id === '') {
-			return Promise.resolve({ envMap: null });
+		  return Promise.resolve({ envMap: null });
 		}
-
+	  
+		// Use the new path served from your server
+		const hostedPath = `http://3.25.96.47:3004/public/textures/footprint_court_2k.exr`;
+		console.log(hostedPath);
 		return new Promise((resolve, reject) => {
-			new EXRLoader().load(
-				path,
-				(texture) => {
-					const envMap = this.pmremGenerator.fromEquirectangular(texture).texture;
-					this.pmremGenerator.dispose();
-
-					resolve({ envMap });
-				},
-				undefined,
-				reject,
-			);
+		  new EXRLoader().load(
+			hostedPath,
+			(texture) => {
+			  const envMap = this.pmremGenerator.fromEquirectangular(texture).texture;
+			  this.pmremGenerator.dispose();
+	  
+			  resolve({ envMap });
+			},
+			undefined,
+			reject,
+		  );
 		});
-	}
-
+	  }
+	  
 	updateDisplay() {
 		if (this.skeletonHelpers.length) {
 			this.skeletonHelpers.forEach((helper) => this.scene.remove(helper));
