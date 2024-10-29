@@ -87,11 +87,13 @@ export class Viewer {
 			bgColor: '#191919',
 
 			pointSize: 1.0,
-			prompt: 'silver metal watch in background forest on a stone',		  
+			prompt: 'silver metal watch in beach on a sand, simple background',		  
 		};
 
 		this.prevTime = 0;
-
+		this.timerInterval = null;
+		this.startTime = null;
+	
 		this.stats = new Stats();
 		this.stats.dom.height = '48px';
 		[].forEach.call(this.stats.dom.children, (child) => (child.style.display = ''));
@@ -141,22 +143,24 @@ export class Viewer {
 		window.addEventListener('resize', this.resize.bind(this), false);
 	}
 
-	// src/viewer.js
 	async saveCurrentViewAsRGBA() {
 		try {
 		  console.log('saveCurrentViewAsRGBA called');
-	  
+	
 		  // Show loading spinner
 		  const spinner = document.getElementById('loading-spinner');
-		  if (spinner) spinner.style.display = 'block';
-	  
+		  if (spinner) spinner.classList.add('active');
+	
+		  // Initialize and start the timer
+		  this.startTimer();
+	
 		  // Render the scene
 		  this.renderer.render(this.scene, this.activeCamera);
 		  const canvas = this.renderer.domElement;
 		  const dataURL = canvas.toDataURL('image/png');
-	  
+	
 		  console.log('Canvas captured, sending to backend...');
-	  
+	
 		  const response = await fetch('/api/process-image', {
 			method: 'POST',
 			headers: {
@@ -165,15 +169,16 @@ export class Viewer {
 			body: JSON.stringify({
 			  imageData: dataURL,
 			  prompt: this.state.prompt,
+			  productSize: this.state.productSize, // Ensure productSize is included
 			}),
 		  });
-	  
+	
 		  console.log('Fetch request sent, awaiting response...');
-	  
+	
 		  const result = await response.json();
-	  
+	
 		  if (response.ok) {
-			console.log('Images processed successfully:', result.finalImageUrls);
+			console.log('Images processed successfully:');
 			this.displayFinalImages(result.finalImageUrls);
 		  } else {
 			console.error('Error from backend:', result.error);
@@ -183,13 +188,51 @@ export class Viewer {
 		  console.error('Unexpected error:', error);
 		  alert(`An unexpected error occurred: ${error.message}`);
 		} finally {
+		  // Stop the timer
+		  this.stopTimer();
+	
 		  // Hide loading spinner
 		  const spinner = document.getElementById('loading-spinner');
-		  if (spinner) spinner.style.display = 'none';
+		  if (spinner) spinner.classList.remove('active');
 		}
 	  }
-	  
-
+	
+	  // Timer Functions
+	
+	  startTimer() {
+		this.startTime = Date.now();
+	
+		// Update the timer every second
+		this.timerInterval = setInterval(() => {
+		  const elapsedTime = Date.now() - this.startTime;
+		  const formattedTime = this.formatTime(elapsedTime);
+		  const timerElement = document.getElementById('timer');
+		  if (timerElement) {
+			timerElement.textContent = `Elapsed Time: ${formattedTime}`;
+		  }
+		}, 1000);
+	  }
+	
+	  stopTimer() {
+		if (this.timerInterval) {
+		  clearInterval(this.timerInterval);
+		  this.timerInterval = null;
+		}
+		const timerElement = document.getElementById('timer');
+		if (timerElement) {
+		  timerElement.textContent = 'Elapsed Time: 00:00';
+		}
+	  }
+	
+	  formatTime(milliseconds) {
+		const totalSeconds = Math.floor(milliseconds / 1000);
+		const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+		const seconds = String(totalSeconds % 60).padStart(2, '0');
+		return `${minutes}:${seconds}`;
+	  }
+	
+	  // Existing displayFinalImages method...
+	
 	  displayFinalImages(imageUrls) {
 		// Get the container where images will be displayed
 		const container = document.getElementById('generated-images-container');
@@ -197,45 +240,45 @@ export class Viewer {
 		  console.error('Generated images container not found in the DOM.');
 		  return;
 		}
-	  
+	
 		// Create a wrapper for the current generation
 		const generationWrapper = document.createElement('div');
 		generationWrapper.classList.add('generation-wrapper');
-	  
+	
 		// Display the prompt used
 		const promptText = document.createElement('p');
 		promptText.textContent = `Prompt: ${this.state.prompt}`;
 		promptText.classList.add('prompt-text');
 		generationWrapper.appendChild(promptText);
-	  
+	
 		// Create a grid to display images
 		const grid = document.createElement('div');
 		grid.classList.add('image-grid');
-	  
+	
 		imageUrls.forEach((url) => {
 		  const imgWrapper = document.createElement('div');
 		  imgWrapper.classList.add('image-wrapper');
-	  
+	
 		  const img = document.createElement('img');
 		  img.src = url;
 		  img.alt = 'Generated Image';
 		  img.classList.add('generated-image');
-	  
+	
 		  // Add click event to open zoom view
 		  img.addEventListener('click', () => {
 			this.openZoomView(url);
 		  });
-	  
+	
 		  imgWrapper.appendChild(img);
 		  grid.appendChild(imgWrapper);
 		});
-	  
+	
 		generationWrapper.appendChild(grid);
-	  
+	
 		// Append the generation to the container
 		container.prepend(generationWrapper); // Or appendChild for bottom placement
-	  }	  
-	  
+	  }
+		  
 	  openZoomView(imageUrl) {
 		// Create modal elements
 		const modalOverlay = document.createElement('div');

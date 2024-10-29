@@ -336,12 +336,19 @@ footer .separator {
   border: 8px solid #f3f3f3;
   border-top: 8px solid #3498db;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite, pulse 2s ease-in-out infinite;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Additional Timer Styling */
+#loading-spinner #timer {
+  color: #fff;
+  font-size: 1.2rem;
+  margin-top: 10px;
 }
 
 /* Generated Images Container */
