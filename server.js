@@ -113,7 +113,7 @@ function generateUniqueFileName() {
 app.post('/api/process-image', async (req, res) => {
   console.log('Received request to /api/process-image');
   try {
-    const { imageData, prompt } = req.body;
+    var { imageData, prompt, productSize } = req.body;
 
     // Input Validation
     if (!imageData) {
@@ -126,7 +126,23 @@ app.post('/api/process-image', async (req, res) => {
       return res.status(400).json({ error: 'No prompt provided.' });
     }
 
-    console.log('Converting data URL to Buffer...');
+    if (
+      !productSize ||
+      typeof productSize !== 'number' ||
+      productSize < 0.4 
+    ) {
+      console.error('Invalid product size provided.');
+      return res.status(400).json({ error: 'Invalid product size provided.' });
+    }
+
+    if (productSize > 0.6) {
+      productSize = "Original"
+    }
+    else {
+      productSize = `${productSize} * width`
+    }
+
+    console.log('Converting data URL to Buffer...', productSize);
     const base64Data = imageData.replace(/^data:image\/png;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');
 
@@ -146,7 +162,7 @@ app.post('/api/process-image', async (req, res) => {
         image_num: Number(process.env.NUM_INPAINT_OUTPUT),
         image_path: imageUrl,
         manual_seed: -1,
-        product_size: "Original",
+        product_size: productSize,
         guidance_scale: 7.5,
         negative_prompt:
           'low quality, person hand, human skin, out of frame, illustration, 3d, sepia, painting, cartoons, sketch, watermark, text, Logo, advertisement',

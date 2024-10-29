@@ -87,6 +87,7 @@ export class Viewer {
 			bgColor: '#191919',
 
 			pointSize: 1.0,
+			productSize: 0.6,
 			prompt: 'silver metal watch in beach on a sand, simple background',		  
 		};
 
@@ -169,7 +170,7 @@ export class Viewer {
 			body: JSON.stringify({
 			  imageData: dataURL,
 			  prompt: this.state.prompt,
-			  productSize: this.state.productSize, // Ensure productSize is included
+			  productSize: this.state.productSize,
 			}),
 		  });
 	
@@ -787,13 +788,13 @@ export class Viewer {
 		// Add a prompt input
 		modelInputFolder.add(this.state, 'prompt').name('Prompt');
 	  
-		// // Add a slider for product size
-		// modelInputFolder
-		//   .add(this.state, 'productSize', 0.2, 0.6, 0.1)
-		//   .name('Product Size')
-		//   .onChange((value) => {
-		// 	console.log(`Product size set to: ${value}`);
-		//   });
+		// Add a slider for product size
+		modelInputFolder
+		  .add(this.state, 'productSize', 0.4, 1.0, 0.1)
+		  .name('Product Size')
+		  .onChange((value) => {
+			console.log(`Product size set to: ${value}`);
+		  });
 
 		modelInputFolder.open();
 		  
