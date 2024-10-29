@@ -87,6 +87,9 @@ export class Viewer {
 			bgColor: '#191919',
 
 			pointSize: 1.0,
+			prompt: 'silver metal watch, outdoor, background forest',
+			productSize: 0.4,
+		  
 		};
 
 		this.prevTime = 0;
@@ -140,42 +143,148 @@ export class Viewer {
 		window.addEventListener('resize', this.resize.bind(this), false);
 	}
 
+	// src/viewer.js
 	async saveCurrentViewAsRGBA() {
-		// Render the scene
-		this.renderer.render(this.scene, this.activeCamera);
-		const canvas = this.renderer.domElement;
-		const dataURL = canvas.toDataURL('image/png');
-		const response = await fetch('/api/process-image', {
+		try {
+		  console.log('saveCurrentViewAsRGBA called');
+	  
+		  // Show loading spinner
+		  const spinner = document.getElementById('loading-spinner');
+		  if (spinner) spinner.style.display = 'block';
+	  
+		  // Render the scene
+		  this.renderer.render(this.scene, this.activeCamera);
+		  const canvas = this.renderer.domElement;
+		  const dataURL = canvas.toDataURL('image/png');
+	  
+		  console.log('Canvas captured, sending to backend...');
+	  
+		  const response = await fetch('/api/process-image', {
 			method: 'POST',
 			headers: {
-			'Content-Type': 'application/json',
+			  'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ imageData: dataURL }),
-		});
-
-		const result = await response.json();
-
-		if (response.ok) {
-			this.displayFinalImage(result.finalImageUrl);
-		} else {
-			console.error('Error:', result.error);
+			body: JSON.stringify({
+			  imageData: dataURL,
+			  prompt: this.state.prompt,
+			  productSize: this.state.productSize,
+			}),
+		  });
+	  
+		  console.log('Fetch request sent, awaiting response...');
+	  
+		  const result = await response.json();
+	  
+		  if (response.ok) {
+			console.log('Images processed successfully:', result.finalImageUrls);
+			this.displayFinalImages(result.finalImageUrls);
+		  } else {
+			console.error('Error from backend:', result.error);
+			alert(`Error processing image: ${result.error}`);
+		  }
+		} catch (error) {
+		  console.error('Unexpected error:', error);
+		  alert(`An unexpected error occurred: ${error.message}`);
+		} finally {
+		  // Hide loading spinner
+		  const spinner = document.getElementById('loading-spinner');
+		  if (spinner) spinner.style.display = 'none';
 		}
-	}
+	  }
+	  
 
-	displayFinalImage(imageUrl) {
-		// Create an image element
+	  displayFinalImages(imageUrls) {
+		// Get the container where images will be displayed
+		const container = document.getElementById('generated-images-container');
+		if (!container) {
+		  console.error('Generated images container not found in the DOM.');
+		  return;
+		}
+	  
+		// Create a wrapper for the current generation
+		const generationWrapper = document.createElement('div');
+		generationWrapper.classList.add('generation-wrapper');
+	  
+		// Display the prompt used
+		const promptText = document.createElement('p');
+		promptText.textContent = `Prompt: ${this.state.prompt}`;
+		promptText.classList.add('prompt-text');
+		generationWrapper.appendChild(promptText);
+	  
+		// Create a grid to display images
+		const grid = document.createElement('div');
+		grid.classList.add('image-grid');
+	  
+		imageUrls.forEach((url) => {
+		  const imgWrapper = document.createElement('div');
+		  imgWrapper.classList.add('image-wrapper');
+	  
+		  const img = document.createElement('img');
+		  img.src = url;
+		  img.alt = 'Generated Image';
+		  img.classList.add('generated-image');
+	  
+		  // Add click event to open zoom view
+		  img.addEventListener('click', () => {
+			this.openZoomView(url);
+		  });
+	  
+		  imgWrapper.appendChild(img);
+		  grid.appendChild(imgWrapper);
+		});
+	  
+		generationWrapper.appendChild(grid);
+	  
+		// Append the generation to the container
+		container.prepend(generationWrapper); // Or appendChild for bottom placement
+	  }	  
+	  
+	  openZoomView(imageUrl) {
+		// Create modal elements
+		const modalOverlay = document.createElement('div');
+		modalOverlay.id = 'modal-overlay';
+	  
+		const modalContent = document.createElement('div');
+		modalContent.id = 'modal-content';
+	  
 		const img = document.createElement('img');
 		img.src = imageUrl;
-		img.alt = 'Generated Image';
-
-		// Optionally, style the image or add it to a specific container
-		img.style.maxWidth = '100%';
-
-		// Append the image to the DOM
-		document.body.appendChild(img);
-	}
-
-
+		img.alt = 'Zoomed Image';
+		img.id = 'modal-image';
+	  
+		// Append image to modal content
+		modalContent.appendChild(img);
+	  
+		// Append modal content to overlay
+		modalOverlay.appendChild(modalContent);
+	  
+		// Append overlay to body
+		document.body.appendChild(modalOverlay);
+	  
+		// Add event listeners
+		modalOverlay.addEventListener('click', (event) => {
+		  if (event.target === modalOverlay) {
+			this.closeZoomView();
+		  }
+		});
+	  
+		document.addEventListener('keydown', this.handleEscKey);
+	  }
+	  
+	  closeZoomView() {
+		const modalOverlay = document.getElementById('modal-overlay');
+		if (modalOverlay) {
+		  modalOverlay.remove();
+		  document.removeEventListener('keydown', this.handleEscKey);
+		}
+	  }
+	  
+	  handleEscKey = (event) => {
+		if (event.key === 'Escape') {
+		  this.closeZoomView();
+		}
+	  };
+	  
 	animate(time) {
 		requestAnimationFrame(this.animate);
 
@@ -554,11 +663,11 @@ export class Viewer {
 
 	addGUI() {
 		const gui = (this.gui = new GUI({
-			autoPlace: false,
-			width: 260,
-			hideable: true,
+		  autoPlace: false,
+		  width: 400,
+		  hideable: true,
 		}));
-	
+	  
 		// Display controls.
 		const dispFolder = gui.addFolder('Display');
 		const envBackgroundCtrl = dispFolder.add(this.state, 'background');
@@ -576,45 +685,45 @@ export class Viewer {
 		pointSizeCtrl.onChange(() => this.updateDisplay());
 		const bgColorCtrl = dispFolder.addColor(this.state, 'bgColor');
 		bgColorCtrl.onChange(() => this.updateBackground());
-	
+	  
 		// Lighting controls.
 		const lightFolder = gui.addFolder('Lighting');
 		const envMapCtrl = lightFolder.add(
-			this.state,
-			'environment',
-			environments.map((env) => env.name),
+		  this.state,
+		  'environment',
+		  environments.map((env) => env.name)
 		);
 		envMapCtrl.onChange(() => this.updateEnvironment());
 		[
-			lightFolder.add(this.state, 'toneMapping', {
-				Linear: LinearToneMapping,
-				'ACES Filmic': ACESFilmicToneMapping,
-			}),
-			lightFolder.add(this.state, 'exposure', -10, 10, 0.01),
-			lightFolder.add(this.state, 'punctualLights').listen(),
-			lightFolder.add(this.state, 'ambientIntensity', 0, 2),
-			lightFolder.addColor(this.state, 'ambientColor'),
-			lightFolder.add(this.state, 'directIntensity', 0, 4), // TODO(#116)
-			lightFolder.addColor(this.state, 'directColor'),
+		  lightFolder.add(this.state, 'toneMapping', {
+			Linear: LinearToneMapping,
+			'ACES Filmic': ACESFilmicToneMapping,
+		  }),
+		  lightFolder.add(this.state, 'exposure', -10, 10, 0.01),
+		  lightFolder.add(this.state, 'punctualLights').listen(),
+		  lightFolder.add(this.state, 'ambientIntensity', 0, 2),
+		  lightFolder.addColor(this.state, 'ambientColor'),
+		  lightFolder.add(this.state, 'directIntensity', 0, 4), // TODO(#116)
+		  lightFolder.addColor(this.state, 'directColor'),
 		].forEach((ctrl) => ctrl.onChange(() => this.updateLights()));
-	
+	  
 		// Animation controls.
 		this.animFolder = gui.addFolder('Animation');
 		this.animFolder.domElement.style.display = 'none';
 		const playbackSpeedCtrl = this.animFolder.add(this.state, 'playbackSpeed', 0, 1);
 		playbackSpeedCtrl.onChange((speed) => {
-			if (this.mixer) this.mixer.timeScale = speed;
+		  if (this.mixer) this.mixer.timeScale = speed;
 		});
 		this.animFolder.add({ playAll: () => this.playAllClips() }, 'playAll');
-	
+	  
 		// Morph target controls.
 		this.morphFolder = gui.addFolder('Morph Targets');
 		this.morphFolder.domElement.style.display = 'none';
-	
+	  
 		// Camera controls.
 		this.cameraFolder = gui.addFolder('Cameras');
 		this.cameraFolder.domElement.style.display = 'none';
-	
+	  
 		// Stats.
 		const perfFolder = gui.addFolder('Performance');
 		const perfLi = document.createElement('li');
@@ -622,20 +731,37 @@ export class Viewer {
 		perfLi.appendChild(this.stats.dom);
 		perfLi.classList.add('gui-stats');
 		perfFolder.__ul.appendChild(perfLi);
-	
-		// **Add the Save Button Here (Outside Any Folder)**
+	  
+		// **Add the Generate Packshot Button Here (Outside Any Folder)**
 		const saveButton = {
-			'Save View as RGBA': () => this.saveCurrentViewAsRGBA(),
+		  'Generate packshot': () => this.saveCurrentViewAsRGBA(),
 		};
-		gui.add(saveButton, 'Save View as RGBA');
-	
+		gui.add(saveButton, 'Generate packshot');
+	  
+		// Add a folder for Model Inputs
+		const modelInputFolder = gui.addFolder('Model Inputs');
+	  
+		// Add a prompt input
+		modelInputFolder.add(this.state, 'prompt').name('Prompt');
+	  
+		// // Add a slider for product size
+		// modelInputFolder
+		//   .add(this.state, 'productSize', 0.2, 0.6, 0.1)
+		//   .name('Product Size')
+		//   .onChange((value) => {
+		// 	console.log(`Product size set to: ${value}`);
+		//   });
+
+		modelInputFolder.open();
+		  
 		// Wrap the GUI in a container and append to the DOM
 		const guiWrap = document.createElement('div');
 		this.el.appendChild(guiWrap);
 		guiWrap.classList.add('gui-wrap');
 		guiWrap.appendChild(gui.domElement);
 		gui.open();
-	}
+	  }
+	  
 		
 	updateGUI() {
 		this.cameraFolder.domElement.style.display = 'none';

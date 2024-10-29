@@ -1,6 +1,7 @@
 {
 	"private": true,
 	"version": "1.5.1",
+	"type": "module",
 	"description": "Preview glTF models using three.js and a drag-and-drop interface.",
 	"author": "Don McCurdy <dm@donmccurdy.com> (https://www.donmccurdy.com)",
 	"license": "MIT",
@@ -18,7 +19,7 @@
 		]
 	},
 	"scripts": {
-		"dev": "concurrently \"vite --port 3003\" \"node server.js\"",
+		"dev": "concurrently \"vite --port 3004\" \"node server.js\"",
 		"build": "vite build",
 		"clean": "rimraf dist/**",
 		"test": "node test/gen_test.js",
@@ -26,6 +27,7 @@
 		"postversion": "git push && git push --tags"
 	},
 	"dependencies": {
+		"aws-sdk": "^2.1691.0",
 		"cors": "^2.8.5",
 		"dat.gui": "^0.7.9",
 		"dotenv": "^16.4.5",
@@ -43,6 +45,6 @@
 		"concurrently": "^9.0.1",
 		"prettier": "^3.2.5",
 		"rimraf": "^5.0.5",
-		"vite": "^5.1.6"
+		"vite": "^5.4.10"
 	}
 }
