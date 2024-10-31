@@ -88,7 +88,7 @@ export class Viewer {
 
 			pointSize: 1.0,
 			productSize: 0.6,
-			prompt: 'silver metal watch in beach on a sand, simple background',		  
+			prompt: 'silver metal watch in beach on a sand, sea background',		  
 		};
 
 		this.prevTime = 0;
