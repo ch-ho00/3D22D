@@ -22,8 +22,8 @@ MODELS = [
     {
         'id': "ch-ho00/cartier-model2-ft2:2a18f8c55504f8cecd9230142b1d2f2579d49c2018aeb65ad0426b0b266574f9",
         'name': "Cartier Model",
-        'placeholder': '"silver metal WTHCTR watch" on a wooden table',
-        'instruction': 'try including "silver metal WTHCTR watch" to render Cartier watch'
+        'placeholder': '"silver metal WTHCTR watch on the beach" on a wooden table',
+        'instruction': 'try including "silver metal WTHCTR watch on the beach" to render Cartier watch'
     },
     {
         'id': "ch-ho00/raymont-v1:724a18e350c7fe56cdf4e522f067e939a631372abbad37301e9b086eca5842a0",
