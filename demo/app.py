@@ -20,6 +20,12 @@ GENERATED_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 # Define available models
 MODELS = [
     {
+        'id': "ch-ho00/vz777-watch-v1:c8158413e503bd08c5f4645b6ce966a52b0cfb8418569b2ab05d7d4104e60e90",
+        'name': "Visionaries Watch Model",
+        'placeholder': 'rose gold VZWTH watch on a wooden table',
+        'instruction': 'try including "rose gold VZWTH watch" to render Visionaries watch'
+    },
+    {
         'id': "ch-ho00/cartier-model2-ft2:2a18f8c55504f8cecd9230142b1d2f2579d49c2018aeb65ad0426b0b266574f9",
         'name': "Cartier Model",
         'placeholder': '"silver metal WTHCTR watch on the beach" on a wooden table',
