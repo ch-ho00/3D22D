@@ -6,17 +6,17 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
+            background-color: #fafafa;
             margin: 0;
             padding: 20px;
         }
         .container {
-            max-width: 1000px;
+            max-width: 900px;
             margin: auto;
             background: white;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
         .input-form {
             text-align: center;
@@ -30,32 +30,28 @@
         }
         textarea {
             width: 100%;
-            height: 80px;
-            padding: 10px;
+            height: 100px;
+            padding: 15px;
             margin-top: 10px;
             margin-bottom: 20px;
             resize: vertical;
             font-size: 16px;
-        }
-        select {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            font-size: 16px;
-        }
-        input[type=range] {
-            width: 100%;
-            margin: 10px 0;
-        }
-        .slider-value {
-            text-align: right;
-            font-weight: bold;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 15px 25px;
+            font-size: 18px;
             cursor: pointer;
             width: 100%;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #4cae4c;
         }
         #loading {
             display: none;
@@ -67,44 +63,51 @@
             border: 8px solid #f3f3f3;
             border-top: 8px solid #333;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
+            margin: 20px auto;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         .history-item {
-            margin-bottom: 30px;
-            display: flex;
-            align-items: flex-start;
-            border-top: 1px solid #ddd;
-            padding-top: 20px;
+            margin-bottom: 50px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 30px;
         }
         .history-item:nth-child(1) {
             border-top: none;
             padding-top: 0;
         }
         .prompt-text {
-            width: 30%;
-            margin-right: 20px;
+            margin-bottom: 20px;
+        }
+        .prompt-text h3, .prompt-text h4 {
+            margin-bottom: 10px;
+        }
+        .prompt-text p {
+            font-size: 18px;
+            line-height: 1.5;
         }
         .images {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            width: 70%;
+            gap: 20px;
+            justify-content: center;
         }
         .images img {
-            max-width: 150px;
-            border-radius: 4px;
+            max-width: 200px;
+            width: 50%;
+            height: auto;
+            border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         .images img:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
         #error {
             margin-top: 20px;
@@ -123,25 +126,15 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: rgba(0,0,0,0.8);
+            background-color: rgba(0,0,0,0.9);
         }
         /* Modal Content (image) */
         .modal-content {
             margin: auto;
             display: block;
-            max-width: 80%;
+            max-width: 90%;
             max-height: 80%;
-            border-radius: 4px;
-        }
-        /* Caption of Modal Image */
-        #caption {
-            margin: auto;
-            display: block;
-            width: 80%;
-            max-width: 700px;
-            text-align: center;
-            color: #ccc;
-            padding: 10px 0;
+            border-radius: 8px;
         }
         /* Close Button */
         .close {
@@ -185,17 +178,14 @@
         }
         /* Responsive adjustments */
         @media only screen and (max-width: 700px){
-            .history-item {
-                flex-direction: column;
+            .prompt-text p {
+                font-size: 16px;
             }
-            .prompt-text, .images {
-                width: 100%;
+            .images img {
+                max-width: 100%;
             }
-            .prompt-text {
-                margin-bottom: 10px;
-            }
-            .modal-content {
-                width: 100%;
+            .close {
+                font-size: 30px;
             }
             .nav-button {
                 font-size: 40px;
@@ -208,24 +198,17 @@
         <div class="input-form">
             <h1>Image Generator</h1>
             <form id="prompt-form">
-                <label for="model_id">Select Model:</label>
-                <select id="model_id" name="model_id" required>
-                    <option value="" disabled selected>Select a model</option>
-                    {% for model in models %}
-                        <option value="{{ model.id }}" data-placeholder="{{ model.placeholder }}" data-instruction="{{ model.instruction }}">{{ model.name }}</option>
-                    {% endfor %}
-                </select>
-                
-                <label for="prompt">Enter your prompt ({{ models[0].instruction }}):</label>
-                <textarea id="prompt" name="prompt" required placeholder='e.g., "{{ models[0].placeholder }}"'></textarea>
+                <label for="prompt">Enter your prompt:</label>
+                <textarea id="prompt" name="prompt" required placeholder='e.g., "{{ placeholder }}"'></textarea>
                 
                 <label for="num_outputs">Number of Images: <span id="num_outputs_label">1</span></label>
                 <input type="range" id="num_outputs" name="num_outputs" min="1" max="4" value="1">
                 
-                <button type="submit">Generate Image</button>
+                <button type="submit">Generate Images</button>
             </form>
             <div id="loading">
                 <div class="spinner"></div>
+                <p>Generating images, please wait...</p>
             </div>
             <div id="error"></div>
         </div>
@@ -236,8 +219,6 @@
                     <div class="prompt-text">
                         <h3>Prompt:</h3>
                         <p>{{ item.prompt }}</p>
-                        <h4>Model:</h4>
-                        <p>{{ item.model }}</p>
                     </div>
                     <div class="images">
                         {% for img in item.images %}
@@ -255,33 +236,9 @@
       <span class="nav-button prev">&#10094;</span>
       <span class="nav-button next">&#10095;</span>
       <img class="modal-content" id="modalImage">
-      <div id="caption"></div>
     </div>
 
     <script>
-        const modelSelect = document.getElementById('model_id');
-        const promptTextarea = document.getElementById('prompt');
-        const promptLabel = document.querySelector('label[for="prompt"]');
-
-        modelSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const placeholder = selectedOption.getAttribute('data-placeholder');
-            const instruction = selectedOption.getAttribute('data-instruction');
-            promptTextarea.placeholder = `e.g., "${placeholder}"`;
-            promptLabel.textContent = `Enter your prompt (${instruction}):`;
-        });
-
-        // Initialize with the first model's placeholder and instruction if any models are present
-        window.addEventListener('DOMContentLoaded', (event) => {
-            if (modelSelect.options.length > 1) { // More than the default disabled option
-                const firstModel = modelSelect.options[1];
-                const placeholder = firstModel.getAttribute('data-placeholder');
-                const instruction = firstModel.getAttribute('data-instruction');
-                promptTextarea.placeholder = `e.g., "${placeholder}"`;
-                promptLabel.textContent = `Enter your prompt (${instruction}):`;
-            }
-        });
-
         // Update the slider label dynamically
         const slider = document.getElementById('num_outputs');
         const sliderLabel = document.getElementById('num_outputs_label');
@@ -301,13 +258,11 @@
             // Get the form values
             const prompt = document.getElementById('prompt').value;
             const num_outputs = document.getElementById('num_outputs').value;
-            const model_id = document.getElementById('model_id').value;
 
             // Prepare the form data
             const formData = new FormData();
             formData.append('prompt', prompt);
             formData.append('num_outputs', num_outputs);
-            formData.append('model_id', model_id);
 
             // Send the POST request to the server
             fetch('/generate', {
@@ -334,15 +289,8 @@
                     const promptText = document.createElement('p');
                     promptText.textContent = data.prompt;
 
-                    const modelHeader = document.createElement('h4');
-                    modelHeader.textContent = 'Model:';
-                    const modelText = document.createElement('p');
-                    modelText.textContent = data.model;
-
                     promptDiv.appendChild(promptHeader);
                     promptDiv.appendChild(promptText);
-                    promptDiv.appendChild(modelHeader);
-                    promptDiv.appendChild(modelText);
 
                     const imagesDiv = document.createElement('div');
                     imagesDiv.classList.add('images');
@@ -351,7 +299,7 @@
                         const img = document.createElement('img');
                         img.src = image_url;
                         img.alt = 'Generated Image';
-                        img.classList.add('zoomable'); // Add the 'zoomable' class
+                        img.classList.add('zoomable');
                         img.dataset.index = index;
                         img.dataset.group = historyDiv.children.length;
                         imagesDiv.appendChild(img);
@@ -361,7 +309,7 @@
                     historyItem.appendChild(imagesDiv);
                     historyDiv.insertBefore(historyItem, historyDiv.firstChild); // Insert at the top
 
-                    // Reattach event listeners for new images
+                    // Reattach event listeners for the new images
                     attachZoomEvents();
 
                     // Optionally, clear the prompt field
@@ -386,9 +334,8 @@
         // Get the modal
         const modal = document.getElementById("imageModal");
 
-        // Get the modal image and caption
+        // Get the modal image
         const modalImg = document.getElementById("modalImage");
-        const captionText = document.getElementById("caption");
 
         // Get the <span> element that closes the modal
         const span = document.getElementsByClassName("close")[0];
@@ -404,7 +351,6 @@
                 img.onclick = function(){
                     modal.style.display = "block";
                     modalImg.src = this.src;
-                    captionText.innerHTML = this.alt;
                     currentIndex = parseInt(this.dataset.index);
                     currentGroup = parseInt(this.dataset.group);
                     imagesInGroup = document.querySelectorAll(`img.zoomable[data-group='${currentGroup}']`);

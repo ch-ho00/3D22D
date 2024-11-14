@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, send_from_directory
+from flask import Flask, render_template, request, jsonify, session
 import replicate
 import os
 import requests
@@ -17,27 +17,9 @@ replicate_client = replicate.Client(api_token=os.getenv("REPLICATE_API_TOKEN"))
 GENERATED_IMAGES_DIR = Path("static/generated_images")
 GENERATED_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
-# Define available models
-MODELS = [
-    {
-        'id': "ch-ho00/vz777-watch-v1:c8158413e503bd08c5f4645b6ce966a52b0cfb8418569b2ab05d7d4104e60e90",
-        'name': "Visionaries Watch Model",
-        'placeholder': 'rose gold VZWTH watch on a wooden table',
-        'instruction': 'try including "rose gold VZWTH watch" to render Visionaries watch'
-    },
-    {
-        'id': "ch-ho00/cartier-model2-ft2:2a18f8c55504f8cecd9230142b1d2f2579d49c2018aeb65ad0426b0b266574f9",
-        'name': "Cartier Model",
-        'placeholder': '"silver metal WTHCTR watch on the beach" on a wooden table',
-        'instruction': 'try including "silver metal WTHCTR watch on the beach" to render Cartier watch'
-    },
-    {
-        'id': "ch-ho00/raymont-v1:724a18e350c7fe56cdf4e522f067e939a631372abbad37301e9b086eca5842a0",
-        'name': "Richemont Model",
-        'placeholder': 'RYMDWTH watch" on a wooden table',
-        'instruction': 'try including "RYMDWTH watch" to render Richemont watch'
-    },
-]
+# Define the single model to be used
+MODEL_ID = "black-forest-labs/flux-dev"
+MODEL_NAME = "Flux Dev Model"
 
 def get_session_id():
     """Retrieve or create a unique session ID."""
@@ -49,24 +31,15 @@ def get_session_id():
 def index():
     # Retrieve the history from the session
     history = session.get('history', [])
-    return render_template('index.html', history=history, models=MODELS)
+    return render_template('index.html', history=history, model_name=MODEL_NAME, placeholder='black forest gateau cake spelling out the words "FLUX DEV", tasty, food photography, dynamic shot')
 
 @app.route('/generate', methods=['POST'])
 def generate():
     prompt = request.form.get('prompt', '').strip()
     num_outputs = request.form.get('num_outputs', '1').strip()
-    model_id = request.form.get('model_id', '').strip()
 
     if not prompt:
         return jsonify({'error': 'Prompt is required.'}), 400
-
-    if not model_id:
-        return jsonify({'error': 'Model selection is required.'}), 400
-
-    # Find the selected model
-    selected_model = next((model for model in MODELS if model['id'] == model_id), None)
-    if not selected_model:
-        return jsonify({'error': 'Selected model is invalid.'}), 400
 
     try:
         num_outputs = int(num_outputs)
@@ -76,21 +49,19 @@ def generate():
         return jsonify({'error': 'Invalid number of outputs.'}), 400
 
     try:
-        # Call the Replicate API
-        model = selected_model['id']
+        # Call the Replicate API with the updated input
         output = replicate_client.run(
-            model,
+            MODEL_ID,
             input={
                 "prompt": prompt,
-                "model": "dev",
-                "lora_scale": 1,
+                "go_fast": True,
+                "guidance": 3.5,
+                "megapixels": "1",
                 "num_outputs": num_outputs,
                 "aspect_ratio": "1:1",
                 "output_format": "webp",
-                "guidance_scale": 3.5,
-                "output_quality": 90,
+                "output_quality": 80,
                 "prompt_strength": 0.8,
-                "extra_lora_scale": 1,
                 "num_inference_steps": 28
             }
         )
@@ -125,16 +96,15 @@ def generate():
         history.append({
             'prompt': prompt,
             'images': image_urls,
-            'model': selected_model['name']
+            'model': MODEL_NAME
         })
         session['history'] = history
 
-        return jsonify({'success': True, 'images': image_urls, 'prompt': prompt, 'model': selected_model['name']})
+        return jsonify({'success': True, 'images': image_urls, 'prompt': prompt, 'model': MODEL_NAME})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 if __name__ == '__main__':
-    # Run the Flask app on port 8888
-    app.run(host='0.0.0.0', port=8888, debug=True)
+    # Run the Flask app on port 8889
+    app.run(host='0.0.0.0', port=8889, debug=True)
