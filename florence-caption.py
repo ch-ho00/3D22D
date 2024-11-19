@@ -144,6 +144,7 @@ if __name__ == "__main__":
     # Positional arguments
     parser.add_argument("input_folder", type=str, help="Path to the input folder containing images or captions.")
     parser.add_argument("output_base_folder", type=str, help="Path to the base folder for saving output captions.")
+    parser.add_argument("trigger_word", type=str)
 
     # Parse arguments
     args = parser.parse_args()
@@ -155,17 +156,17 @@ if __name__ == "__main__":
     prompt_configs = {
         "<CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
-            "Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with 'RYMDWTH'."
+            f"Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with '{args.trigger_word}'."
             "Do not start sentence with a 'The image' or 'Displayed is'. Remove phases flashy explanations like 'A glimpse into elegance and sophistication'. Change it as if a person is writing to render this image from text."
         ),
         "<DETAILED_CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
-            "Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with 'RYMDWTH'."
+            f"Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with '{args.trigger_word}'."
             "Do not start sentence with a 'The image' or 'Displayed is'. Remove phases flashy explanations like 'A glimpse into elegance and sophistication'. Change it as if a person is writing to render this image from text."
         ),
         "<MORE_DETAILED_CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
-            "Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with 'RYMDWTH'."
+            f"Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with '{args.trigger_word}'."
             "Do not start sentence with a 'The image' or 'Displayed is'. Remove phases flashy explanations like 'A glimpse into elegance and sophistication'. Change it as if a person is writing to render this image from text."
         )
     }
