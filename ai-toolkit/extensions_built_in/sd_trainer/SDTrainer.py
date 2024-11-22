@@ -364,6 +364,7 @@ class SDTrainer(BaseSDTrainProcess):
             target = self.sd.noise_scheduler.get_velocity(batch.tensor, noise, timesteps)
 
         elif self.sd.is_flow_matching:
+            ## Enter
             target = (noise - batch.latents).detach()
         else:
             target = noise
@@ -435,6 +436,10 @@ class SDTrainer(BaseSDTrainProcess):
             mask_multiplier = torch.nn.functional.interpolate(mask_multiplier, size=(pred.shape[2], pred.shape[3]), mode='nearest')
 
         # multiply by our mask
+        if self.train_config.focus_on_mask:
+            with torch.no_grad():
+                mask_multiplier = mask_multiplier * 100 
+                mask_multiplier = mask_multiplier + torch.ones_like(mask_multiplier)
         loss = loss * mask_multiplier
 
         prior_loss = None

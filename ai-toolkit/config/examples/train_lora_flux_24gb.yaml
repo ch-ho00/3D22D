@@ -14,8 +14,8 @@ config:
       trigger_word: "DTLWTH"
       network:
         type: "lora"
-        linear: 32
-        linear_alpha: 32
+        linear: 16
+        linear_alpha: 16
       save:
         dtype: float16 # precision to save
         save_every: 500 # save every this many steps
@@ -32,11 +32,13 @@ config:
           caption_dropout_rate: 0.05  # will drop out the caption 5% of time
           shuffle_tokens: false  # shuffle caption order, split by commas
           cache_latents_to_disk: true  # leave this true unless you know what you're doing
-          resolution: [ 512 ]  # flux enjoys multiple resolutions
+          resolution: [ 512, 768 ]  # flux enjoys multiple resolutions
+          mask_path: "/root/mask"
       train:
         batch_size: 1
-        steps: 2500  # total number of steps to train 500 - 4000 is a good range
+        steps: 4000  # total number of steps to train 500 - 4000 is a good range
         gradient_accumulation_steps: 1
+        focus_on_mask : true
         train_unet: true
         train_text_encoder: false  # probably won't work with flux
         gradient_checkpointing: true  # need the on unless you have a ton of vram
@@ -66,8 +68,8 @@ config:
       sample:
         sampler: "flowmatch" # must match train.noise_scheduler
         sample_every: 400 # sample every this many steps
-        width: 512
-        height: 512
+        width: 768
+        height: 768
         prompts:
           - "A captivating close-up reveals a DTLWTH graced with a rose gold case. The reverse side puts the brand's logo on display at the center. The watch, made up of petite rectangular links, connects seamlessly to the DTLWTH face. The DTLWTH is posed on an appealing gray marble surface and garnered from a mildly elevated angle."
           - "This close-up showcases the DTLWTH featuring a rose gold case and a textured black leather strap, angled towards the left side of the image."
@@ -78,7 +80,7 @@ config:
         guidance_scale: 4
         sample_steps: 20
       logging:
-        log_every: 10
+        log_every: 5
         use_wandb: True
         verbose: True
 

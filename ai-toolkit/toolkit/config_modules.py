@@ -295,6 +295,7 @@ class TrainConfig:
         # match the norm of the noise before computing loss. This will help the model maintain its
         # current understandin of the brightness of images.
 
+        self.focus_on_mask = kwargs.get('focus_on_mask', False)
         self.match_noise_norm = kwargs.get('match_noise_norm', False)
 
         # set to -1 to accumulate gradients for entire epoch
