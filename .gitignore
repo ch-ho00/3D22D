@@ -1,3 +1,5 @@
+ai-toolkit/output
+ai-toolkit/wandb
 demo/static
 data/
 imgs/

@@ -14,8 +14,8 @@ config:
       trigger_word: "DTLWTH"
       network:
         type: "lora"
-        linear: 128
-        linear_alpha: 128
+        linear: 32
+        linear_alpha: 32
       save:
         dtype: float16 # precision to save
         save_every: 500 # save every this many steps
@@ -32,7 +32,7 @@ config:
           caption_dropout_rate: 0.05  # will drop out the caption 5% of time
           shuffle_tokens: false  # shuffle caption order, split by commas
           cache_latents_to_disk: true  # leave this true unless you know what you're doing
-          resolution: [ 2048 ]  # flux enjoys multiple resolutions
+          resolution: [ 512 ]  # flux enjoys multiple resolutions
       train:
         batch_size: 1
         steps: 2500  # total number of steps to train 500 - 4000 is a good range
@@ -66,17 +66,22 @@ config:
       sample:
         sampler: "flowmatch" # must match train.noise_scheduler
         sample_every: 400 # sample every this many steps
-        width: 1024
-        height: 1024
+        width: 512
+        height: 512
         prompts:
-          - "A captivating close-up reveals a DTLWTH graced with a rose gold case and bracelet. The reverse side puts the brand's logo on display at the center. The bracelet, made up of petite rectangular links, connects seamlessly to the DTLWTH face. The DTLWTH is posed on an appealing gray marble surface and garnered from a mildly elevated angle."
-          - "This close-up showcases the back of a DTLWTH featuring a rose gold case and a textured black leather strap, angled towards the left side of the image."
+          - "A captivating close-up reveals a DTLWTH graced with a rose gold case. The reverse side puts the brand's logo on display at the center. The watch, made up of petite rectangular links, connects seamlessly to the DTLWTH face. The DTLWTH is posed on an appealing gray marble surface and garnered from a mildly elevated angle."
+          - "This close-up showcases the DTLWTH featuring a rose gold case and a textured black leather strap, angled towards the left side of the image."
           - "Rose gold DTLWTH resting on a stone in a forest."
         neg: ""  # not used on flux
         seed: 42
         walk_seed: true
         guidance_scale: 4
         sample_steps: 20
+      logging:
+        log_every: 10
+        use_wandb: True
+        verbose: True
+
 # you can add any additional meta info here. [name] is replaced with config name at top
 meta:
   name: "[name]"
