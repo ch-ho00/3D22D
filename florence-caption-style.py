@@ -25,7 +25,7 @@ processor = AutoProcessor.from_pretrained(
     trust_remote_code=True
 )
 
-def generate_caption(image, task_prompt="<MORE_DETAILED_CAPTION>"):
+def generate_caption(image, task_prompt="<CAPTION>"):
     """
     Generate a caption for the given image using the Florence-2 model.
     """
@@ -77,7 +77,7 @@ def refine_caption_with_openai(caption, gpt_prompt):
         logging.error(f"Error refining caption: {e}")
         return ""
 
-def run_inference_on_image(image_path, output_folder, base_name, task_prompt="<MORE_DETAILED_CAPTION>", gpt_prompt=""):
+def run_inference_on_image(image_path, output_folder, base_name, task_prompt="<CAPTION>", gpt_prompt=""):
     """
     Generate and refine captions for a single image, with caching.
     """
@@ -122,15 +122,15 @@ def main(input_folder, output_base_folder):
     # Define the GPT prompt
     gpt_prompt = (
         "Please rewrite the following caption to focus on describing the watch, "
-        "and remove any descriptions of the background. "
+        "and remove any descriptions of the background. Also remove unnecessary comments that are not a description of the product. For example 'making it perfect for any occasion.'"
         "Ensure the caption reads naturally and coherently."
     )
 
     # Set the task prompt for Florence-2
-    task_prompt = "<MORE_DETAILED_CAPTION>"
+    task_prompt = "<CAPTION>"
 
     # Create output folder
-    output_folder = os.path.join(output_base_folder, "captions_with_STRSTY")
+    output_folder = os.path.join(output_base_folder, "captions")
     os.makedirs(output_folder, exist_ok=True)
 
     # Define supported image extensions
