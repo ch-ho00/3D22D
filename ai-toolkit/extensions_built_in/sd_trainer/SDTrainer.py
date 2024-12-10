@@ -438,7 +438,9 @@ class SDTrainer(BaseSDTrainProcess):
         # multiply by our mask
         if self.train_config.focus_on_mask:
             with torch.no_grad():
-                mask_multiplier = mask_multiplier * 100 
+                weight = mask_multiplier.numel() / (mask_multiplier > 0).sum()
+                # print(weight)
+                mask_multiplier = mask_multiplier * weight
                 mask_multiplier = mask_multiplier + torch.ones_like(mask_multiplier)
         loss = loss * mask_multiplier
 
