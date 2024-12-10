@@ -33,3 +33,7 @@ huggingface_hub
 peft
 gradio
 python-slugify
+requests==2.28.2
+boto3
+awscli
+Pillow==9.5.0
