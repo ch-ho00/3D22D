@@ -156,17 +156,17 @@ if __name__ == "__main__":
     prompt_configs = {
         "<CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
-            f"Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with '{args.trigger_word}'."
+            f"Also Replace every occurrence of the word 'watch' or model name like and watch model name with '{args.trigger_word}'; even the description on the color/shape of the watch should be removed. {args.trigger_word} should embed everything about the watch"
             "Do not start sentence with a 'The image' or 'Displayed is'. Remove phases flashy explanations like 'A glimpse into elegance and sophistication'. Change it as if a person is writing to render this image from text."
         ),
         "<DETAILED_CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
-            f"Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with '{args.trigger_word}'."
+            f"Also Replace every occurrence of the word 'watch' or model name like and watch model name with '{args.trigger_word}'; even the description on the color/shape of the watch should be removed. {args.trigger_word} should embed everything about the watch"
             "Do not start sentence with a 'The image' or 'Displayed is'. Remove phases flashy explanations like 'A glimpse into elegance and sophistication'. Change it as if a person is writing to render this image from text."
         ),
         "<MORE_DETAILED_CAPTION>": (
             "Maintaining all original information and ensuring caption reads concisely and naturally and coherently, revise the caption "
-            f"Also Replace every occurrence of the word 'watch' or watch model name like Jaeger-LeCoultre Master Ultra Thin and watch model name with '{args.trigger_word}'."
+            f"Also Replace every occurrence of the word 'watch' or model name like and watch model name with '{args.trigger_word}'; even the description on the color/shape of the watch should be removed. {args.trigger_word} should embed everything about the watch"
             "Do not start sentence with a 'The image' or 'Displayed is'. Remove phases flashy explanations like 'A glimpse into elegance and sophistication'. Change it as if a person is writing to render this image from text."
         )
     }
