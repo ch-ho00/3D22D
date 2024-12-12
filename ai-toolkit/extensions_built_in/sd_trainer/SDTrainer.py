@@ -447,7 +447,7 @@ class SDTrainer(BaseSDTrainProcess):
                 logo_weight = (logo_mask_multiplier.numel() / (logo_mask_multiplier > 0).sum()) ** 0.5
                 mask_multiplier = mask_multiplier + logo_mask_multiplier * logo_weight
                 mask_multiplier = mask_multiplier + torch.ones_like(mask_multiplier)
-
+            
         loss = loss * mask_multiplier
 
         prior_loss = None

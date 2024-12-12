@@ -1070,7 +1070,6 @@ class MaskFileItemDTOMixin:
         try:
             logo_img = Image.open(self.logo_mask_path)
             logo_img = exif_transpose(logo_img)
-            print("opened", self.logo_mask_path)
         except Exception as e:
             print(f"Error: {e}")
             print(f"Error loading image: {self.logo_mask_path}")

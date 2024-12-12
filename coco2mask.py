@@ -64,8 +64,8 @@ def create_binary_masks(
 
 if __name__ == "__main__":
     create_binary_masks(
-        annotations_file='data/Richmont_Loras_Renders/annotations.json',
-        images_dir='data/Richmont_Loras_Renders',
-        output_dir='data/Richmont_Loras_Renders/mask',
+        annotations_file='/root/RMTWTH/logo-mask.json',
+        images_dir='/root/RMTWTH/1',
+        output_dir='/root/RMTWTH/logo-mask',
         category_ids=[4]
     )
