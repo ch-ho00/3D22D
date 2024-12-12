@@ -956,6 +956,10 @@ class MaskFileItemDTOMixin:
         self.has_mask_image = False
         self.mask_path: Union[str, None] = None
         self.mask_tensor: Union[torch.Tensor, None] = None
+
+        self.logo_mask_path: Union[str, None] = None
+        self.logo_mask_tensor: Union[torch.Tensor, None] = None
+
         self.use_alpha_as_mask: bool = False
         dataset_config: 'DatasetConfig' = kwargs.get('dataset_config', None)
         self.mask_min_value = dataset_config.mask_min_value
@@ -964,16 +968,24 @@ class MaskFileItemDTOMixin:
             self.mask_path = kwargs.get('path', None)
             self.has_mask_image = True
         elif dataset_config.mask_path is not None:
-            # find the control image path
-            mask_path = dataset_config.mask_path if dataset_config.mask_path is not None else dataset_config.alpha_mask
             # we are using control images
             img_path = kwargs.get('path', None)
             img_ext_list = ['.jpg', '.jpeg', '.png', '.webp']
             file_name_no_ext = os.path.splitext(os.path.basename(img_path))[0]
+
+            # find the control image path
+            mask_path = dataset_config.mask_path if dataset_config.mask_path is not None else dataset_config.alpha_mask
             for ext in img_ext_list:
                 if os.path.exists(os.path.join(mask_path, file_name_no_ext + ext)):
                     self.mask_path = os.path.join(mask_path, file_name_no_ext + ext)
                     self.has_mask_image = True
+                    break
+
+            logo_mask_path = dataset_config.logo_mask_path if dataset_config.logo_mask_path is not None else dataset_config.alpha_mask
+            for ext in img_ext_list:
+                if os.path.exists(os.path.join(logo_mask_path, file_name_no_ext + ext)):
+                    self.logo_mask_path = os.path.join(logo_mask_path, file_name_no_ext + ext)
+                    self.has_logo_mask_image = True
                     break
 
     def load_mask_image(self: 'FileItemDTO'):
@@ -1023,9 +1035,9 @@ class MaskFileItemDTOMixin:
             img = img.transpose(Image.FLIP_TOP_BOTTOM)
 
         # randomly apply a blur up to 0.5% of the size of the min (width, height)
-        min_size = min(img.width, img.height)
-        blur_radius = int(min_size * random.random() * 0.005)
-        img = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+        # min_size = min(img.width, img.height)
+        # blur_radius = int(min_size * random.random() * 0.005)
+        # img = img.filter(ImageFilter.GaussianBlur(radius=blur_radius))
 
         # make grayscale
         img = img.convert('L')
@@ -1054,9 +1066,71 @@ class MaskFileItemDTOMixin:
         self.mask_tensor = value_map(self.mask_tensor, 0, 1.0, self.mask_min_value, 1.0)
         # convert to grayscale
 
+
+        try:
+            logo_img = Image.open(self.logo_mask_path)
+            logo_img = exif_transpose(logo_img)
+            print("opened", self.logo_mask_path)
+        except Exception as e:
+            print(f"Error: {e}")
+            print(f"Error loading image: {self.logo_mask_path}")
+
+        logo_img = logo_img.convert('RGB')
+        w, h = logo_img.size
+        fix_size = False
+        if w > h and self.scale_to_width < self.scale_to_height:
+            # throw error, they should match
+            print(f"unexpected values: w={w}, h={h}, file_item.scale_to_width={self.scale_to_width}, file_item.scale_to_height={self.scale_to_height}, file_item.path={self.path}")
+            fix_size = True
+        elif h > w and self.scale_to_height < self.scale_to_width:
+            # throw error, they should match
+            print(f"unexpected values: w={w}, h={h}, file_item.scale_to_width={self.scale_to_width}, file_item.scale_to_height={self.scale_to_height}, file_item.path={self.path}")
+            fix_size = True
+
+        if fix_size:
+            # swap all the sizes
+            self.scale_to_width, self.scale_to_height = self.scale_to_height, self.scale_to_width
+            self.crop_width, self.crop_height = self.crop_height, self.crop_width
+            self.crop_x, self.crop_y = self.crop_y, self.crop_x
+
+        if self.flip_x:
+            # do a flip
+            img = img.transpose(Image.FLIP_LEFT_RIGHT)
+        if self.flip_y:
+            # do a flip
+            img = img.transpose(Image.FLIP_TOP_BOTTOM)
+
+        # make grayscale
+        logo_img = logo_img.convert('L')
+
+        if self.dataset_config.buckets:
+            # scale and crop based on file item
+            logo_img = logo_img.resize((self.scale_to_width, self.scale_to_height), Image.BICUBIC)
+            # img = transforms.CenterCrop((self.crop_height, self.crop_width))(img)
+            # crop
+            logo_img = logo_img.crop((
+                self.crop_x,
+                self.crop_y,
+                self.crop_x + self.crop_width,
+                self.crop_y + self.crop_height
+            ))
+        else:
+            raise Exception("Mask images not supported for non-bucket datasets")
+
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+        ])
+        if self.aug_replay_spatial_transforms:
+            self.logo_mask_tensor = self.augment_spatial_control(logo_img, transform=transform)
+        else:
+            self.logo_mask_tensor = transform(logo_img)
+        self.logo_mask_tensor = value_map(self.logo_mask_tensor, 0, 1.0, self.mask_min_value, 1.0)
+        # convert to grayscale
+
+
     def cleanup_mask(self: 'FileItemDTO'):
         self.mask_tensor = None
-
+        self.logo_mask_tensor = None
 
 class UnconditionalFileItemDTOMixin:
     def __init__(self: 'FileItemDTO', *args, **kwargs):

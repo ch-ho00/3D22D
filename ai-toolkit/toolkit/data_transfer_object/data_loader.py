@@ -106,6 +106,7 @@ class DataLoaderBatchDTO:
             self.control_tensor: Union[torch.Tensor, None] = None
             self.clip_image_tensor: Union[torch.Tensor, None] = None
             self.mask_tensor: Union[torch.Tensor, None] = None
+            self.logo_mask_tensor: Union[torch.Tensor, None] = None
             self.unaugmented_tensor: Union[torch.Tensor, None] = None
             self.unconditional_tensor: Union[torch.Tensor, None] = None
             self.unconditional_latents: Union[torch.Tensor, None] = None
@@ -169,6 +170,22 @@ class DataLoaderBatchDTO:
                     else:
                         mask_tensors.append(x.mask_tensor)
                 self.mask_tensor = torch.cat([x.unsqueeze(0) for x in mask_tensors])
+
+
+            if any([x.logo_mask_tensor is not None for x in self.file_items]):
+                # find one to use as a base
+                base_logo_mask_tensor = None
+                for x in self.file_items:
+                    if x.logo_mask_tensor is not None:
+                        base_logo_mask_tensor = x.logo_mask_tensor
+                        break
+                logo_mask_tensors = []
+                for x in self.file_items:
+                    if x.logo_mask_tensor is None:
+                        logo_mask_tensors.append(torch.zeros_like(base_logo_mask_tensor))
+                    else:
+                        logo_mask_tensors.append(x.logo_mask_tensor)
+                self.logo_mask_tensor = torch.cat([x.unsqueeze(0) for x in logo_mask_tensors])
 
             # add unaugmented tensors for ones with augments
             if any([x.unaugmented_tensor is not None for x in self.file_items]):

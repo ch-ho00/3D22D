@@ -280,6 +280,7 @@ class SDTrainer(BaseSDTrainProcess):
             timesteps: torch.Tensor,
             batch: 'DataLoaderBatchDTO',
             mask_multiplier: Union[torch.Tensor, float] = 1.0,
+            logo_mask_multiplier: Union[torch.Tensor, float] = 1.0,
             prior_pred: Union[torch.Tensor, None] = None,
             **kwargs
     ):
@@ -434,14 +435,19 @@ class SDTrainer(BaseSDTrainProcess):
             mask_multiplier = mask_multiplier[:, 3:, :, :]
             # resize to the size of the loss
             mask_multiplier = torch.nn.functional.interpolate(mask_multiplier, size=(pred.shape[2], pred.shape[3]), mode='nearest')
+            mask_multiplier = torch.nn.functional.interpolate(mask_multiplier, size=(pred.shape[2], pred.shape[3]), mode='nearest')
 
         # multiply by our mask
         if self.train_config.focus_on_mask:
             with torch.no_grad():
-                weight = mask_multiplier.numel() / (mask_multiplier > 0).sum()
+                weight = (mask_multiplier.numel() / (mask_multiplier > 0).sum()) ** 0.5
                 # print(weight)
                 mask_multiplier = mask_multiplier * weight
+
+                logo_weight = (logo_mask_multiplier.numel() / (logo_mask_multiplier > 0).sum()) ** 0.5
+                mask_multiplier = mask_multiplier + logo_mask_multiplier * logo_weight
                 mask_multiplier = mask_multiplier + torch.ones_like(mask_multiplier)
+
         loss = loss * mask_multiplier
 
         prior_loss = None
@@ -1056,6 +1062,18 @@ class SDTrainer(BaseSDTrainProcess):
                     mask_multiplier = mask_multiplier.expand(-1, noisy_latents.shape[1], -1, -1)
                     mask_multiplier = mask_multiplier.to(self.device_torch, dtype=dtype).detach()
 
+
+                with self.timer('get_logo_mask_multiplier'):
+                    # upsampling no supported for bfloat16
+                    logo_mask_multiplier = batch.logo_mask_tensor.to(self.device_torch, dtype=torch.float16).detach()
+                    # scale down to the size of the latents, logo_mask multiplier shape(bs, 1, width, height), noisy_latents shape(bs, channels, width, height)
+                    logo_mask_multiplier = torch.nn.functional.interpolate(
+                        logo_mask_multiplier, size=(noisy_latents.shape[2], noisy_latents.shape[3])
+                    )
+                    # expand to match latents
+                    logo_mask_multiplier = logo_mask_multiplier.expand(-1, noisy_latents.shape[1], -1, -1)
+                    logo_mask_multiplier = logo_mask_multiplier.to(self.device_torch, dtype=dtype).detach()
+
         def get_adapter_multiplier():
             if self.adapter and isinstance(self.adapter, T2IAdapter):
                 # training a t2i adapter, not using as assistant.
@@ -1141,6 +1159,7 @@ class SDTrainer(BaseSDTrainProcess):
             else:
                 clip_images_list = [None for _ in range(batch_size)]
             mask_multiplier_list = torch.chunk(mask_multiplier, batch_size, dim=0)
+            logo_mask_multiplier_list = torch.chunk(logo_mask_multiplier, batch_size, dim=0)
             if prompts_2 is None:
                 prompt_2_list = [None for _ in range(batch_size)]
             else:
@@ -1155,12 +1174,13 @@ class SDTrainer(BaseSDTrainProcess):
             adapter_images_list = [adapter_images]
             clip_images_list = [clip_images]
             mask_multiplier_list = [mask_multiplier]
+            logo_mask_multiplier_list = [logo_mask_multiplier]
             if prompts_2 is None:
                 prompt_2_list = [None]
             else:
                 prompt_2_list = [prompts_2]
 
-        for noisy_latents, noise, timesteps, conditioned_prompts, imgs, adapter_images, clip_images, mask_multiplier, prompt_2 in zip(
+        for noisy_latents, noise, timesteps, conditioned_prompts, imgs, adapter_images, clip_images, mask_multiplier, logo_mask_multiplier, prompt_2 in zip(
                 noisy_latents_list,
                 noise_list,
                 timesteps_list,
@@ -1169,6 +1189,7 @@ class SDTrainer(BaseSDTrainProcess):
                 adapter_images_list,
                 clip_images_list,
                 mask_multiplier_list,
+                logo_mask_multiplier_list,
                 prompt_2_list
         ):
 
@@ -1554,6 +1575,7 @@ class SDTrainer(BaseSDTrainProcess):
                         noise=noise,
                         unconditional_embeds=unconditional_embeds,
                         mask_multiplier=mask_multiplier,
+                        logo_mask_multiplier=logo_mask_multiplier,
                         prior_pred=prior_pred,
                     )
 
@@ -1579,6 +1601,7 @@ class SDTrainer(BaseSDTrainProcess):
                             timesteps=timesteps,
                             batch=batch,
                             mask_multiplier=mask_multiplier,
+                            logo_mask_multiplier=logo_mask_multiplier,
                             prior_pred=prior_pred,
                         )
                 # check if nan

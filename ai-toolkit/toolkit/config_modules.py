@@ -593,6 +593,9 @@ class DatasetConfig:
         self.alpha_mask: bool = kwargs.get('alpha_mask', False)  # if true, will use alpha channel as mask
         self.mask_path: str = kwargs.get('mask_path',
                                          None)  # focus mask (black and white. White has higher loss than black)
+        self.logo_mask_path: str = kwargs.get('logo_mask_path',
+                                         None)  # focus mask (black and white. White has higher loss than black)
+
         self.unconditional_path: str = kwargs.get('unconditional_path',
                                                   None)  # path where matching unconditional images are located
         self.invert_mask: bool = kwargs.get('invert_mask', False)  # invert mask
