@@ -2,7 +2,7 @@
 job: extension
 config:
   # this name will be the folder and filename name
-  name: "richmont_rank128_caption"
+  name: "RMTWTH_64rank_2res_4ksteps_lr4e-4_batch3"
   process:
     - type: 'sd_trainer'
       training_folder: "output"
@@ -11,32 +11,33 @@ config:
       device: cuda:0
       # if a trigger word is specified, it will be added to captions of training data if it does not already exist
       # alternatively, in your captions you can add [trigger] and it will be replaced with the trigger word
-      trigger_word: "DTLWTH"
+      trigger_word: "RMTWTH"
       network:
         type: "lora"
-        linear: 128
-        linear_alpha: 128
+        linear: 64
+        linear_alpha: 64
       save:
         dtype: float16 # precision to save
         save_every: 500 # save every this many steps
         max_step_saves_to_keep: 3 # how many intermittent saves to keep
-        push_to_hub: false #change this to True to push your trained model to Hugging Face.
+        push_to_hub: True #change this to True to push your trained model to Hugging Face.
       datasets:
         # datasets are a folder of images. captions need to be txt files with the same name as the image
         # for instance image2.jpg and image2.txt. Only jpg, jpeg, and png are supported currently
         # images will automatically be resized and bucketed into the resolution specified
         # on windows, escape back slashes with another backslash so
         # "C:\\path\\to\\images\\folder"
-        - folder_path: "/root/DTLWTH_v2/DTLWTH"
+        - folder_path: "/root/RMTWTH-v2/1"
           caption_ext: "txt"
-          caption_dropout_rate: 0.05  # will drop out the caption 5% of time
-          shuffle_tokens: false  # shuffle caption order, split by commas
-          cache_latents_to_disk: true  # leave this true unless you know what you're doing
-          resolution: [ 1024, 1536, 2048 ]  # flux enjoys multiple resolutions
-          mask_path: "/root/DTLWTH_v2/mask"
+          caption_dropout_rate: 0.0
+          shuffle_tokens: false
+          cache_latents_to_disk: true
+          resolution: [ 1792, 1920, 2048 ] # 
+          mask_path: "/root/RMTWTH-v2/mask"
+          logo_mask_path: "/root/RMTWTH-v2/logo-mask"
       train:
-        batch_size: 4
-        steps: 8000  # total number of steps to train 500 - 4000 is a good range
+        batch_size: 3
+        steps: 4000  # total number of steps to train 500 - 4000 is a good range
         gradient_accumulation_steps: 1
         focus_on_mask : true
         train_unet: true
@@ -44,9 +45,9 @@ config:
         gradient_checkpointing: true  # need the on unless you have a ton of vram
         noise_scheduler: "flowmatch" # for training only
         optimizer: "adamw8bit"
-        lr: 1e-4
+        lr: 4e-4
         # uncomment this to skip the pre training sample
-#        skip_first_sample: true
+        skip_first_sample: true
         # uncomment to completely disable sampling
 #        disable_sampling: true
         # uncomment to use new vell curved weighting. Experimental but may produce better results
@@ -66,14 +67,14 @@ config:
         quantize: true  # run 8bit mixed precision
 #        low_vram: true  # uncomment this if the GPU is connected to your monitors. It will use less vram to quantize, but is slower.
       sample:
-        sampler: "flowmatch" # must match train.noise_scheduler
+        sampler: "flowmatch" # must match train.anoise_scheduler
         sample_every: 400 # sample every this many steps
         width: 2048
         height: 2048
         prompts:
-          - "A captivating close-up reveals a DTLWTH graced with a rose gold case. The reverse side puts the brand's logo on display at the center. The watch, made up of petite rectangular links, connects seamlessly to the DTLWTH face. The DTLWTH is posed on an appealing gray marble surface and garnered from a mildly elevated angle."
-          - "This close-up showcases the DTLWTH featuring a rose gold case and a textured black leather strap, angled towards the left side of the image."
-          - "Rose gold DTLWTH resting on a stone in a forest."
+          # - "A captivating view reveals a RMTWTH. The reverse side puts the brand's logo on display at the center. The watch, made up of petite rectangular links, connects seamlessly to the RMTWTH face. The RMTWTH is posed on an appealing marble surface."
+          - "Close-up view of RMTWTH with cafe background."
+          - "RMTWTH resting on a marble surface."
         neg: ""  # not used on flux
         seed: 42
         walk_seed: true

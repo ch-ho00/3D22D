@@ -978,6 +978,7 @@ class MaskFileItemDTOMixin:
             for ext in img_ext_list:
                 if os.path.exists(os.path.join(mask_path, file_name_no_ext + ext)):
                     self.mask_path = os.path.join(mask_path, file_name_no_ext + ext)
+                    print(self.mask_path)
                     self.has_mask_image = True
                     break
 
@@ -985,6 +986,7 @@ class MaskFileItemDTOMixin:
             for ext in img_ext_list:
                 if os.path.exists(os.path.join(logo_mask_path, file_name_no_ext + ext)):
                     self.logo_mask_path = os.path.join(logo_mask_path, file_name_no_ext + ext)
+                    print(self.logo_mask_path)
                     self.has_logo_mask_image = True
                     break
 
