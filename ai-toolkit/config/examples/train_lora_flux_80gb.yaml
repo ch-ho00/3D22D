@@ -2,7 +2,7 @@
 job: extension
 config:
   # this name will be the folder and filename name
-  name: "RMTWTH_64rank_2res_4ksteps_lr4e-4_batch3"
+  name: "RMTWTH_128rank_2kres_3ksteps_lr2e-4_batch4"
   process:
     - type: 'sd_trainer'
       training_folder: "output"
@@ -14,12 +14,12 @@ config:
       trigger_word: "RMTWTH"
       network:
         type: "lora"
-        linear: 64
-        linear_alpha: 64
+        linear: 128
+        linear_alpha: 128
       save:
         dtype: float16 # precision to save
-        save_every: 500 # save every this many steps
-        max_step_saves_to_keep: 3 # how many intermittent saves to keep
+        save_every: 250 # save every this many steps
+        max_step_saves_to_keep: 5 # how many intermittent saves to keep
         push_to_hub: True #change this to True to push your trained model to Hugging Face.
       datasets:
         # datasets are a folder of images. captions need to be txt files with the same name as the image
@@ -32,12 +32,12 @@ config:
           caption_dropout_rate: 0.0
           shuffle_tokens: false
           cache_latents_to_disk: true
-          resolution: [ 1792, 1920, 2048 ] # 
+          resolution: [ 1920, 2048 ]  
           mask_path: "/root/RMTWTH-v2/mask"
           logo_mask_path: "/root/RMTWTH-v2/logo-mask"
       train:
-        batch_size: 3
-        steps: 4000  # total number of steps to train 500 - 4000 is a good range
+        batch_size: 4
+        steps: 3000  # total number of steps to train 500 - 4000 is a good range
         gradient_accumulation_steps: 1
         focus_on_mask : true
         train_unet: true
@@ -45,7 +45,7 @@ config:
         gradient_checkpointing: true  # need the on unless you have a ton of vram
         noise_scheduler: "flowmatch" # for training only
         optimizer: "adamw8bit"
-        lr: 4e-4
+        lr: 2e-4
         # uncomment this to skip the pre training sample
         skip_first_sample: true
         # uncomment to completely disable sampling
@@ -68,7 +68,7 @@ config:
 #        low_vram: true  # uncomment this if the GPU is connected to your monitors. It will use less vram to quantize, but is slower.
       sample:
         sampler: "flowmatch" # must match train.anoise_scheduler
-        sample_every: 400 # sample every this many steps
+        sample_every: 500 # sample every this many steps
         width: 2048
         height: 2048
         prompts:
