@@ -2,7 +2,7 @@
 job: extension
 config:
   # this name will be the folder and filename name
-  name: "RMTWTH_128rank_2kres_3ksteps_lr2e-4_batch4"
+  name: "RMTWTH_128rank_2kres_5ksteps_lr3e-4_batch4_dropout5e-2"
   process:
     - type: 'sd_trainer'
       training_folder: "output"
@@ -29,7 +29,7 @@ config:
         # "C:\\path\\to\\images\\folder"
         - folder_path: "/root/RMTWTH-v2/1"
           caption_ext: "txt"
-          caption_dropout_rate: 0.0
+          caption_dropout_rate: 0.05
           shuffle_tokens: false
           cache_latents_to_disk: true
           resolution: [ 1920, 2048 ]  
@@ -37,7 +37,7 @@ config:
           logo_mask_path: "/root/RMTWTH-v2/logo-mask"
       train:
         batch_size: 4
-        steps: 3000  # total number of steps to train 500 - 4000 is a good range
+        steps: 5000  # total number of steps to train 500 - 4000 is a good range
         gradient_accumulation_steps: 1
         focus_on_mask : true
         train_unet: true
@@ -45,7 +45,7 @@ config:
         gradient_checkpointing: true  # need the on unless you have a ton of vram
         noise_scheduler: "flowmatch" # for training only
         optimizer: "adamw8bit"
-        lr: 2e-4
+        lr: 3e-4
         # uncomment this to skip the pre training sample
         skip_first_sample: true
         # uncomment to completely disable sampling
@@ -68,13 +68,13 @@ config:
 #        low_vram: true  # uncomment this if the GPU is connected to your monitors. It will use less vram to quantize, but is slower.
       sample:
         sampler: "flowmatch" # must match train.anoise_scheduler
-        sample_every: 500 # sample every this many steps
+        sample_every: 250 # sample every this many steps
         width: 2048
         height: 2048
         prompts:
-          # - "A captivating view reveals a RMTWTH. The reverse side puts the brand's logo on display at the center. The watch, made up of petite rectangular links, connects seamlessly to the RMTWTH face. The RMTWTH is posed on an appealing marble surface."
-          - "Close-up view of RMTWTH with cafe background."
-          - "RMTWTH resting on a marble surface."
+          - "Front view of RMTWTH watch sitting on top of wood log with indication of snow in the background."
+          - "Close-up front view of RMTWTH with cafe background."
+          - "Front view of RMTWTH watch resting on a marble surface."
         neg: ""  # not used on flux
         seed: 42
         walk_seed: true
