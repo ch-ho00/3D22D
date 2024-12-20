@@ -2,7 +2,7 @@
 job: extension
 config:
   # this name will be the folder and filename name
-  name: "RMTWTH_128rank_2kres_5ksteps_lr3e-4_batch4_dropout5e-2"
+  name: "RMTWTH_128rank_2kres_5ksteps_lr3e-4_batch3_woQuantize_dropout5e-2"
   process:
     - type: 'sd_trainer'
       training_folder: "output"
@@ -36,7 +36,7 @@ config:
           mask_path: "/root/RMTWTH-v2/mask"
           logo_mask_path: "/root/RMTWTH-v2/logo-mask"
       train:
-        batch_size: 4
+        batch_size: 3
         steps: 5000  # total number of steps to train 500 - 4000 is a good range
         gradient_accumulation_steps: 1
         focus_on_mask : true
@@ -64,7 +64,7 @@ config:
         # huggingface model name or path
         name_or_path: "black-forest-labs/FLUX.1-dev"
         is_flux: true
-        quantize: true  # run 8bit mixed precision
+        quantize: false  # run 8bit mixed precision
 #        low_vram: true  # uncomment this if the GPU is connected to your monitors. It will use less vram to quantize, but is slower.
       sample:
         sampler: "flowmatch" # must match train.anoise_scheduler
